@@ -1,4 +1,5 @@
 #include "Map.h"
+#include "math.h"
 
 void InitMap(struct Map* map)
 {
@@ -45,6 +46,49 @@ void StepMap(struct Map* map)
 	
 	startingFloor = HEIGHT_MIN - (GetRandHeight((*map).steps, 0));
 	startingCeiling = GetRandHeight((*map).steps, 0);
+
+	for(j = 0; j < STEP_SIZE; j++)
+	{
+		for(i = 0; i < 240; i++)
+		{
+			if(i >= startingFloor || i <= startingCeiling)
+				(*map).map[(*map).startingIndex][i] = *GROUND;
+			else
+				(*map).map[(*map).startingIndex][i] = *AIR;
+		}
+
+		if((*map).startingIndex == LENGTH_MAX)
+			(*map).startingIndex = LENGTH_MIN;
+		else
+			(*map).startingIndex++;
+	}
+
+	(*map).steps++;
+}
+
+void StepMapAlternating(struct Map* map, int* altCounter)
+{
+	int startingCeiling;
+	int startingFloor;
+	int i = 0;
+	int j;
+
+	if((*map).steps % 160 == 0)
+	{
+		*altCounter = 160;
+	}
+
+	if(*altCounter > 0)
+	{
+		startingFloor = HEIGHT_MIN - 60 - abs((*altCounter)-80)/10;
+		startingCeiling = 60 + abs((*altCounter)-80)/10;
+		(*altCounter)--;
+	}
+	else
+	{
+		startingFloor = HEIGHT_MIN - 60;
+		startingCeiling = 60;
+	}
 
 	for(j = 0; j < STEP_SIZE; j++)
 	{
@@ -182,21 +226,24 @@ void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer
 	int i = 0;
 	int j = 0;
 
-	int maxFlux = BASE_DIFFUCULTY + (int)(*map).steps/100;
-	int minFlux = BASE_DIFFUCULTY + ((int)(*map).steps/100 - 10);
+	//int maxFlux = BASE_DIFFUCULTY + (int)(*map).steps/100;
+	//int minFlux = BASE_DIFFUCULTY + ((int)(*map).steps/100 - 10);
+
+	int maxFlux = BASE_DIFFUCULTY + 8;
+	int minFlux = BASE_DIFFUCULTY;
 
 	for(i = minFlux; i <= maxFlux; i++)
 	{
 		for(j = (*map).startingIndex; iterations < 320; j++)
 		{
-			if((*map).map[j][i] != (*map).map[j-(2 * STEP_SIZE)][i] || j - (2 *STEP_SIZE) < (*map).startingIndex || j < (2 *STEP_SIZE))
-			{
+			//if((*map).map[j][i] != (*map).map[j-(2 * STEP_SIZE)][i] || j - (2 *STEP_SIZE) < (*map).startingIndex || j < (2 *STEP_SIZE))
+			//{
 				if((*map).map[j][i] == *AIR)
 					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, i);
 
 				else
 					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, i);
-			}
+			//}
 
 			iterations++;
 

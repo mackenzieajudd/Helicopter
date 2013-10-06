@@ -33,7 +33,7 @@ struct Helicopter
 	int vY;
 };
 
-void InitHelicopter(struct Helicopter* helicopter);
+void InitHelicopter(struct Helicopter* helicopter, int x1, int y1, int x2, int y2);
 int CheckForCollisions(struct Map* map, struct Helicopter* helicopter);
 void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawHelicopter(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer);

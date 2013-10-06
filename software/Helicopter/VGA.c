@@ -31,6 +31,13 @@ void SwapBuffers(int* bufferFlag, const int BUFFER0, const int BUFFER1, alt_up_p
 void DrawScore(alt_up_char_buffer_dev** char_buffer, int score)
 {
 	char scoreBuffer[10];
-	sprintf(scoreBuffer, "%d", score);
+	sprintf(scoreBuffer, "Score: %d", score);
 	alt_up_char_buffer_string((*char_buffer), scoreBuffer, 0, 0);
+}
+
+void DrawFPS(alt_up_char_buffer_dev** char_buffer, double fps)
+{
+	char scoreBuffer[15];
+	sprintf(scoreBuffer, "FPS: %d", (int)fps);
+	alt_up_char_buffer_string((*char_buffer), scoreBuffer, 50, 0);
 }

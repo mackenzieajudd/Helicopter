@@ -8,7 +8,7 @@
 #define HEIGHT_MIN 239
 #define LENGTH_MAX 319
 #define LENGTH_MIN 0
-#define STEP_SIZE 16
+#define STEP_SIZE 4
 
 #include <stdio.h>
 #include <time.h>
@@ -27,6 +27,7 @@ void InitMap(struct Map* map);
 void InitMapFromFile(struct Map* map, FILE* mapFile);
 void StepMap(struct Map* map);
 void StepMapFlat(struct Map* map);
+void StepMapAlternating(struct Map* map, int* altCounter);
 int GetRandHeight(int steps, int difficulty);
 
 void DrawMap(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);

@@ -1,22 +1,22 @@
 #include "Helicopter.h"
 #include "Map.h"
 
-void InitHelicopter(struct Helicopter* helicopter)
+void InitHelicopter(struct Helicopter* helicopter, int x1, int y1, int x2, int y2)
 {
-	(*helicopter).x1 = HELICOPTER_STARTING_POSITION_X;
-	(*helicopter).y1 = HELICOPTER_STARTING_POSITION_Y;
-	(*helicopter).x2 = HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X;
-	(*helicopter).y2 = HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y;
+	(*helicopter).x1 = x1;
+	(*helicopter).y1 = y1;
+	(*helicopter).x2 = x2;
+	(*helicopter).y2 = y2;
 
-	(*helicopter).h1x1 = HELICOPTER_STARTING_POSITION_X;
-	(*helicopter).h1y1 = HELICOPTER_STARTING_POSITION_Y;
-	(*helicopter).h1x2 = HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X;
-	(*helicopter).h1y2 = HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y;
+	(*helicopter).h1x1 = x1;
+	(*helicopter).h1y1 = y1;
+	(*helicopter).h1x2 = x2;
+	(*helicopter).h1y2 = y2;
 
-	(*helicopter).h2x1 = HELICOPTER_STARTING_POSITION_X;
-	(*helicopter).h2y1 = HELICOPTER_STARTING_POSITION_Y;
-	(*helicopter).h2x2 = HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X;
-	(*helicopter).h2y2 = HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y;
+	(*helicopter).h2x1 = x1;
+	(*helicopter).h2y1 = y1;
+	(*helicopter).h2x2 = x2;
+	(*helicopter).h2y2 = y2;
 
 	(*helicopter).aX = 0;
 	(*helicopter).aY = HELICOPTER_STARTING_ACCELERATION_Y;
