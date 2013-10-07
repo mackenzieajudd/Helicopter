@@ -7,8 +7,12 @@
 #include "HAL/inc/sys/alt_alarm.h"
 #include "HAL/inc/sys/alt_timestamp.h"
 #include "io.h"
+#include <altera_up_avalon_audio_and_video_config.h>
+#include <altera_up_avalon_audio.h>
+#include "Sound.h"
 
 #define button2 (volatile char *) 0x00004070
+#define FPS 20
 
 int main()
 {
@@ -33,7 +37,20 @@ int main()
 	struct Helicopter h4;
 	struct Map myMap;
 
-	//mapFile = fopen ("..\\Test_Map2.txt", "r");
+	 unsigned int buf [7];
+	 unsigned int buf1 [2];
+	 alt_up_audio_dev * audio = sound_setup();
+
+	 buf[0] = 0x00000FFF;
+	 buf[1] = 0x00000FFF;
+	 buf[2] = 0x00000FFF;
+	 buf[3] = 0x00000FFF;
+	 buf[4] = 0x00000FFF;
+	 buf[5] = 0x00000FFF;
+	 buf[6] = 0x00000001;
+
+	 buf1[0] = 0x00000000;
+	 buf1[1] = 0x00000000;
 
 	srand(time(NULL));
 	//InitMapFromFile(&myMap, mapFile);
@@ -41,9 +58,6 @@ int main()
 	InitHelicopter(&maChoppa, HELICOPTER_STARTING_POSITION_X, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
 
 	InitHelicopter(&h1, HELICOPTER_STARTING_POSITION_X, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
-	//InitHelicopter(&h2, HELICOPTER_STARTING_POSITION_X + 10, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X + 10, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
-	//InitHelicopter(&h3, HELICOPTER_STARTING_POSITION_X + 20, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X + 20, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
-	//InitHelicopter(&h4, HELICOPTER_STARTING_POSITION_X - 10, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X - 10, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
 
 	InitVGA(PIXEL_BUFFER_NAME, CHAR_BUFFER_NAME, &char_buffer, &pixel_buffer, BACK_PIXEL_BUFFER_BASE);
 
@@ -55,37 +69,41 @@ int main()
 	while(*button2 != 0)
 		printf("Button: %d\n", *button2);
 
+	alt_timestamp_start();
+
 	while(CheckForCollisions(&myMap, &maChoppa) != 1)
 	{
-		alt_timestamp_start();
 		fps = 0;
 		start_time = alt_timestamp();
 
-		//StepMapFlat(&myMap);
-		StepMapAlternating(&myMap, &i);
+		if((float)(alt_timestamp())/(float)(alt_timestamp_freq()) > (float)1/(float)FPS)
+		{
+			StepMapAlternating(&myMap, &i);
 
-		DrawFlatMapQuick(&myMap, pixel_buffer);
+			DrawFlatMapQuick(&myMap, pixel_buffer);
 
-		MoveHelicopter(&maChoppa, button2, pixel_buffer);
-		//MoveHelicopter(&h1, button2, pixel_buffer);
-		//MoveHelicopter(&h2, button2, pixel_buffer);
-		//MoveHelicopter(&h3, button2, pixel_buffer);
-		//MoveHelicopter(&h4, button2, pixel_buffer);
+			MoveHelicopter(&maChoppa, button2, pixel_buffer);
 
-		DrawHelicopter(&maChoppa, pixel_buffer);
-		//DrawHelicopter(&h1, pixel_buffer);
-		//DrawHelicopter(&h2, pixel_buffer);
-		//DrawHelicopter(&h3, pixel_buffer);
-		//DrawHelicopter(&h4, pixel_buffer);
+			DrawHelicopter(&maChoppa, pixel_buffer);
 
-		DrawScore(&char_buffer, myMap.steps);
+			PlayChoppaSound(audio, buf, buf1);
 
-		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
+			DrawScore(&char_buffer, myMap.steps);
+			DrawFPS(&char_buffer, FPS);
+
+			SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
+
+			alt_timestamp_start();
+		}
+
 		end_time = alt_timestamp();
-		fps = (float)(end_time - start_time)/(float)alt_timestamp_freq();
-		printf("FPS: %f\n", 1/fps);
-		DrawFPS(&char_buffer, 1/fps);
-		printf("Steps: %d\n", myMap.steps);
+		//fps = (float)(end_time - start_time)/(float)alt_timestamp_freq();
+		//printf("Clock: %f\n", (float)(alt_timestamp())/(float)(alt_timestamp_freq()));
+		//printf("FPS: %f\n", (float)1/(float)FPS);
+		//printf("FPS2: %f\n", (float)alt_timestamp());
+		//printf("FPS3: %f\n", (float)alt_timestamp_freq());
+
+		//printf("Steps: %d\n", myMap.steps);
 	}
 
   return 0;

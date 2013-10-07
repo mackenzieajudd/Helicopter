@@ -41,7 +41,17 @@ ENTITY lights IS
 		SRAM_UB_N	:	OUT	STD_LOGIC;
 		SRAM_CE_N	:	OUT	STD_LOGIC;
 		SRAM_OE_N	:	OUT	STD_LOGIC;
-		SRAM_WE_N	:	OUT	STD_LOGIC);
+		SRAM_WE_N	:	OUT	STD_LOGIC;
+		
+		I2C_SDAT: inout STD_LOGIC;
+		I2C_SCLK: OUT STD_LOGIC;
+		AUD_XCK: OUT STD_LOGIC;
+		CLOCK_27: IN STD_LOGIC;
+		AUD_ADCDAT: IN STD_LOGIC;
+		AUD_ADCLRCK: IN STD_LOGIC;
+		AUD_BCLK: IN STD_LOGIC;
+		AUD_DACDAT: inout STD_LOGIC;
+		AUD_DACLRCK: IN STD_LOGIC);
 
    END lights;
 
@@ -92,7 +102,17 @@ ARCHITECTURE Structure OF lights IS
 		sram_UB_N	:	OUT	STD_LOGIC;
 		sram_CE_N	:	OUT	STD_LOGIC;
 		sram_OE_N	:	OUT	STD_LOGIC;
-		sram_WE_N	:	OUT	STD_LOGIC);
+		sram_WE_N	:	OUT	STD_LOGIC;
+		
+		clocks_clk_in_secondary_clk: IN STD_LOGIC;
+		clocks_audio_clk_clk: out STD_LOGIC;
+		audio_vid_SDAT: INOUT STD_LOGIC;
+		audio_vid_SCLK: out STD_LOGIC;
+		audio_ADCDAT: IN STD_LOGIC;
+		audio_ADCLRCK: IN STD_LOGIC;
+		audio_BCLK: IN STD_LOGIC;
+		audio_DACDAT: out STD_LOGIC;
+		audio_DACLRCK: IN STD_LOGIC);
 
    END COMPONENT;
 
@@ -155,6 +175,16 @@ ARCHITECTURE Structure OF lights IS
 			sram_UB_N	=>	SRAM_UB_N,
 			sram_CE_N	=>	SRAM_CE_N,
 			sram_OE_N	=>	SRAM_OE_N,
-			sram_WE_N	=>	SRAM_WE_N);
+			sram_WE_N	=>	SRAM_WE_N,
+			
+			audio_vid_SDAT => I2C_SDAT,
+			audio_vid_SCLK => I2C_SCLK,
+			clocks_audio_clk_clk => AUD_XCK,
+			clocks_clk_in_secondary_clk => CLOCK_27,
+			audio_ADCDAT => AUD_ADCDAT,
+			audio_ADCLRCK => AUD_ADCLRCK,
+			audio_BCLK => AUD_BCLK,
+			audio_DACDAT => AUD_DACDAT,
+			audio_DACLRCK => AUD_DACLRCK);
 
    END Structure;
