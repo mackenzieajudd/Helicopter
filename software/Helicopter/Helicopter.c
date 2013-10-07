@@ -28,9 +28,11 @@ int CheckForCollisions(struct Map* map, struct Helicopter* helicopter)
 {
 	int i;
 	int j;
+	int n;
+	int collisionHeight;
+	int calcCollision = 0;
 	int transformedI;
-
-	for ( i = (*helicopter).x1; i < (*helicopter).x2; i++)
+	for(i = (*helicopter).x1; i < (*helicopter).x2; i++)
 	{
 		for(j = (*helicopter).y1; j < (*helicopter).y2; j++)
 		{
@@ -42,14 +44,46 @@ int CheckForCollisions(struct Map* map, struct Helicopter* helicopter)
 			{
 				transformedI = i + (*map).startingIndex;
 			}
-
-			if((*map).map[transformedI][j] != *AIR)
+		}
+		if((*map).map[transformedI][(*helicopter).y1] == *GROUND || (*map).map[transformedI][(*helicopter).y2] == *GROUND)
+			calcCollision = 1;
+		if(calcCollision == 1)
+		{
+			if((*helicopter).y1 <= 120) //check top
 			{
-				return 1;
+				collisionHeight = HEIGHT_MAX;
+				for(n = HEIGHT_MAX; (*map).map[transformedI][n] == *GROUND && n < 120; n++){}
+				if(n > collisionHeight)
+				{
+					collisionHeight = n;
+				}
+			}
+			else //check bottom
+			{
+				collisionHeight = HEIGHT_MIN;
+				for(n = HEIGHT_MIN; (*map).map[transformedI][n] != *AIR && n > 120; n--){}
+				if(n < collisionHeight)
+				{
+					collisionHeight = n;
+				}
 			}
 		}
 	}
-
+	if(calcCollision)
+	{
+		if(collisionHeight <= 120)
+		{
+			(*helicopter).y1 = collisionHeight;
+			(*helicopter).y2 = (*helicopter).y1 + 5;
+			return 1;
+		}
+		else if(collisionHeight > 120)
+		{
+			(*helicopter).y2 = collisionHeight;
+			(*helicopter).y1 = (*helicopter).y2 - 5;
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -79,10 +113,10 @@ void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buf
 	(*helicopter).h1x2 = (*helicopter).x2;
 	(*helicopter).h1y2 = (*helicopter).y2;
 
-	(*helicopter).x1 += (*helicopter).vX / 8;
-	(*helicopter).y1 += -1 * (*helicopter).vY / 8;
-	(*helicopter).x2 += (*helicopter).vX / 8;
-	(*helicopter).y2 += -1 * (*helicopter).vY / 8;
+	(*helicopter).x1 += (*helicopter).vX;
+	(*helicopter).y1 += -1 * (*helicopter).vY;
+	(*helicopter).x2 += (*helicopter).vX;
+	(*helicopter).y2 += -1 * (*helicopter).vY;
 
 	(*helicopter).vX += (*helicopter).aX;
 	(*helicopter).vY += (*helicopter).aY;

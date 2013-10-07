@@ -71,32 +71,46 @@ int main()
 
 	alt_timestamp_start();
 
-	while(CheckForCollisions(&myMap, &maChoppa) != 1)
+	while(1 == 1)
 	{
 		fps = 0;
-		start_time = alt_timestamp();
 
 		if((float)(alt_timestamp())/(float)(alt_timestamp_freq()) > (float)1/(float)FPS)
 		{
-			StepMapAlternating(&myMap, &i);
+			start_time = alt_timestamp();
 
+			StepMapAlternating(&myMap, &i);
 			DrawFlatMapQuick(&myMap, pixel_buffer);
 
 			MoveHelicopter(&maChoppa, button2, pixel_buffer);
+			if(CheckForCollisions(&myMap, &maChoppa) == 1)
+			{
+				DrawHelicopter(&maChoppa, pixel_buffer);
+				SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
+				break;
+			}
 
 			DrawHelicopter(&maChoppa, pixel_buffer);
 
 			PlayChoppaSound(audio, buf, buf1);
 
 			DrawScore(&char_buffer, myMap.steps);
-			DrawFPS(&char_buffer, FPS);
 
 			SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
 
+			end_time = alt_timestamp();
+			fps = (float)1/((float)(end_time - start_time)/(float)alt_timestamp_freq());
+			if( fps < FPS)
+			{
+				DrawFPS(&char_buffer, fps);
+			}
+			else
+			{
+				DrawFPS(&char_buffer, FPS);
+			}
+
 			alt_timestamp_start();
 		}
-
-		end_time = alt_timestamp();
 		//fps = (float)(end_time - start_time)/(float)alt_timestamp_freq();
 		//printf("Clock: %f\n", (float)(alt_timestamp())/(float)(alt_timestamp_freq()));
 		//printf("FPS: %f\n", (float)1/(float)FPS);
