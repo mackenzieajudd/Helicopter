@@ -1,5 +1,4 @@
 #include "Map.h"
-#include "math.h"
 
 void InitMap(struct Map* map)
 {
@@ -66,28 +65,53 @@ void StepMap(struct Map* map)
 	(*map).steps++;
 }
 
-void StepMapAlternating(struct Map* map, int* altCounter)
+void StepMapAlternatingObstacles(struct Map* map, int* altCounter, int* mode, struct Obstacle* obstacles[])
 {
 	int startingCeiling;
 	int startingFloor;
 	int i = 0;
 	int j;
+	struct Obstacle obs;
 
 	if((*map).steps % 160 == 0)
 	{
 		*altCounter = 160;
+		if((*mode) == 1)
+			(*mode) = 0;
+		else
+			(*mode) = 1;
 	}
 
-	if(*altCounter > 0)
+	if(*altCounter > 0 && (*mode) == 0)
 	{
-		startingFloor = HEIGHT_MIN - 60 - abs((*altCounter)-80)/10;
-		startingCeiling = 60 + abs((*altCounter)-80)/10;
+		startingFloor = HEIGHT_MIN - BASE_DIFFUCULTY - 20 +  abs((*altCounter)-80)/4;
+		startingCeiling = BASE_DIFFUCULTY - 20 + abs((*altCounter)-80)/4;
+		(*altCounter)--;
+	}
+	else if(*altCounter > 0 && (*mode) == 1)
+	{
+		startingFloor = HEIGHT_MIN - BASE_DIFFUCULTY - 20 +  abs((*altCounter)-80)/4;
+		startingCeiling = BASE_DIFFUCULTY + 20 - abs((*altCounter)-80)/4;
 		(*altCounter)--;
 	}
 	else
 	{
-		startingFloor = HEIGHT_MIN - 60;
-		startingCeiling = 60;
+		startingFloor = HEIGHT_MIN - BASE_DIFFUCULTY;
+		startingCeiling = BASE_DIFFUCULTY;
+	}
+
+	if((*map).steps % 30 == 0)
+	{
+		if((*mode) == 1)
+		{
+			InitObstacle(&obs, 320, startingCeiling + 10, 330, startingCeiling + 20);
+			AddObstacle(obstacles, &obs);
+		}
+		else
+		{
+			InitObstacle(&obs, 320, startingFloor - 20, 330, startingFloor - 10);
+			AddObstacle(obstacles, &obs);
+		}
 	}
 
 	for(j = 0; j < STEP_SIZE; j++)
@@ -220,58 +244,82 @@ void DrawMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 	}
 }
 
+int getRoof(struct Map* map, int x)
+{
+	int i;
+
+	for(i = HEIGHT_MAX; (*map).map[x][i] != *AIR; i++)
+	{
+	}
+
+	return i - 1;
+}
+
+int getFloor(struct Map* map, int x)
+{
+	int i;
+
+	for(i = HEIGHT_MIN; (*map).map[x][i] != *AIR; i--)
+	{
+	}
+
+	return i + 1;
+}
+
 void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 {
 	int iterations = 0;
 	int i = 0;
 	int j = 0;
 
-	//int maxFlux = BASE_DIFFUCULTY + (int)(*map).steps/100;
-	//int minFlux = BASE_DIFFUCULTY + ((int)(*map).steps/100 - 10);
+	int flux = 3;
+	int tempRoof;
+	int tempFloor;
 
-	int maxFlux = BASE_DIFFUCULTY + 8;
-	int minFlux = BASE_DIFFUCULTY;
-
-	for(i = minFlux; i <= maxFlux; i++)
+	for(i = (*map).startingIndex; iterations < 320; i++)
 	{
-		for(j = (*map).startingIndex; iterations < 320; j++)
+		tempRoof = getRoof(map, i);
+
+		for(j = tempRoof - flux; j < tempRoof + flux; j++)
 		{
-			//if((*map).map[j][i] != (*map).map[j-(2 * STEP_SIZE)][i] || j - (2 *STEP_SIZE) < (*map).startingIndex || j < (2 *STEP_SIZE))
-			//{
-				if((*map).map[j][i] == *AIR)
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, i);
+			if((*map).map[i][j] != (*map).map[i-(2 * STEP_SIZE)][j] || i - (2 * STEP_SIZE) < (*map).startingIndex || i < (2 *STEP_SIZE))
+			{
+				if((*map).map[i][j] == *AIR)
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, j);
 
 				else
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, i);
-			//}
-
-			iterations++;
-
-			if (j == LENGTH_MAX)
-				j = LENGTH_MIN - 1;
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, j);
+			}
 		}
-		iterations = 0;
+
+		iterations++;
+
+		if (i == LENGTH_MAX)
+			i = LENGTH_MIN - 1;
 	}
 
-	for(i = HEIGHT_MIN - minFlux; i >= HEIGHT_MIN - maxFlux; i--)
+	iterations = 0;
+
+	for(i = (*map).startingIndex; iterations < 320; i++)
 	{
-		for(j = (*map).startingIndex; iterations < 320; j++)
+		tempFloor = getFloor(map, i);
+
+		for(j = tempFloor + flux; j > tempFloor - flux; j--)
 		{
-			if((*map).map[j][i] != (*map).map[j-(2 * STEP_SIZE)][i] || j - (2 *STEP_SIZE) < (*map).startingIndex || j < (2 *STEP_SIZE))
+			if((*map).map[i][j] != (*map).map[i-(2 * STEP_SIZE)][j] || i - (2 * STEP_SIZE) < (*map).startingIndex || i < (2 *STEP_SIZE))
 			{
-				if((*map).map[j][i] == *AIR)
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, i);
+				if((*map).map[i][j] == *AIR)
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, j);
 
 				else
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, i);
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, j);
 			}
-
-			iterations++;
-
-			if (j == LENGTH_MAX)
-				j = LENGTH_MIN - 1;
 		}
-		iterations = 0;
+
+		iterations++;
+
+		if (i == LENGTH_MAX)
+			i = LENGTH_MIN - 1;
 	}
 }
 

@@ -3,11 +3,14 @@
 
 #define HELICOPTER_STARTING_POSITION_X 155
 #define HELICOPTER_STARTING_POSITION_Y 115
-#define HELICOPTER_SIZE_X 5
+#define HELICOPTER_SIZE_X 6
 #define HELICOPTER_SIZE_Y 5
 #define HELICOPTER_STARTING_ACCELERATION_Y -1
 
+#define HELICOPTER_COLOUR 0x6600FF
+
 #include "Map.h"
+#include "Obstacle.h"
 
 struct Helicopter
 {
@@ -37,5 +40,7 @@ void InitHelicopter(struct Helicopter* helicopter, int x1, int y1, int x2, int y
 int CheckForCollisions(struct Map* map, struct Helicopter* helicopter);
 void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawHelicopter(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer);
+void DrawHelicopterFancy(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer, int* chopperFlag);
+int CheckForObstacleCollisions(struct Obstacle* obstacles[], struct Helicopter* helicopter);
 
 #endif

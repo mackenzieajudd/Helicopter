@@ -11,9 +11,12 @@
 #include <altera_up_avalon_audio.h>
 #include "Sound.h"
 #include "Menu.h"
+#include "Obstacle.h"
 
-#define button2 (volatile char *) 0x00004070
-#define FPS 20
+#define button2 (volatile char *) 0x00004470
+#define FPS 30
+
+void wait(float);
 
 int main()
 {
@@ -23,8 +26,11 @@ int main()
 	const char* CHAR_BUFFER_NAME = "/dev/video_character_buffer_with_dma_0";
 	int i = 0;
 	int j = 0;
+	int mode = 0;
+	int chopperFlag = 0;
 	int start_time;
 	int end_time;
+	int highScore = 0;
 	int buffer_flag = 0;
 	alt_up_pixel_buffer_dma_dev* pixel_buffer;
 	alt_up_char_buffer_dev* char_buffer;
@@ -32,6 +38,10 @@ int main()
 	FILE* mapFile;
 	struct Helicopter maChoppa;
 	struct Map myMap;
+	struct Obstacle block0;
+	struct Obstacle block1;
+	struct Obstacle block2;
+	struct Obstacle obstacles[NUM_OBSTACLES];
 	unsigned int buf [7];
 	unsigned int buf1 [2];
 	alt_up_audio_dev * audio = sound_setup();
@@ -58,6 +68,9 @@ int main()
 	while(1 == 1)
 	{
 		InitMap(&myMap);
+
+		InitObstacles(&obstacles);
+
 		InitHelicopter(&maChoppa, HELICOPTER_STARTING_POSITION_X, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
 
 		DrawMap(&myMap, pixel_buffer);
@@ -65,7 +78,7 @@ int main()
 		DrawMap(&myMap, pixel_buffer);
 		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
 
-		DrawHelicopter(&maChoppa, pixel_buffer);
+		DrawHelicopterFancy(&maChoppa, pixel_buffer, &chopperFlag);
 		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
 		DrawCountdown(pixel_buffer, &char_buffer);
 
@@ -81,18 +94,53 @@ int main()
 			{
 				start_time = alt_timestamp();
 
-				StepMapAlternating(&myMap, &i);
+				StepMapAlternatingObstacles(&myMap, &i, &mode, &obstacles);
 				DrawFlatMapQuick(&myMap, pixel_buffer);
 
 				MoveHelicopter(&maChoppa, button2, pixel_buffer);
-				if(CheckForCollisions(&myMap, &maChoppa) == 1)
+
+				MoveObstacles(&obstacles);
+				ManageObstacles(&obstacles, pixel_buffer);
+				DrawObstacles(&obstacles, pixel_buffer);
+
+				if(CheckForCollisions(&myMap, &maChoppa) == 1 || CheckForObstacleCollisions(&obstacles, &maChoppa) == 1)
 				{
-					DrawHelicopter(&maChoppa, pixel_buffer);
+					DrawHelicopterFancy(&maChoppa, pixel_buffer, &chopperFlag);
 					SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 + 2, maChoppa.y1 + 2, maChoppa.x2 - 2, maChoppa.y2 - 2, 0xF000, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 + 1, maChoppa.y1 + 1, maChoppa.x2 - 1, maChoppa.y2 - 1, 0xF000, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1, maChoppa.y1, maChoppa.x2, maChoppa.y2, 0xF000, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 - 1, maChoppa.y1 - 1, maChoppa.x2 + 1, maChoppa.y2 + 1, 0xF000, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 - 2, maChoppa.y1 - 2, maChoppa.x2 + 2, maChoppa.y2 + 2, 0xF000, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 + 2, maChoppa.y1 + 2, maChoppa.x2 - 2, maChoppa.y2 - 2, 0xFFFF, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 + 1, maChoppa.y1 + 1, maChoppa.x2 - 1, maChoppa.y2 - 1, 0xFFFF, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1, maChoppa.y1, maChoppa.x2, maChoppa.y2, 0xFFFF, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 - 1, maChoppa.y1 - 1, maChoppa.x2 + 1, maChoppa.y2 + 1, 0xFFFF, 0);
+					wait(0.15);
+
+					alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, maChoppa.x1 - 2, maChoppa.y1 - 2, maChoppa.x2 + 2, maChoppa.y2 + 2, 0xFFFF, 0);
+					wait(0.15);
+
 					break;
 				}
-
-				DrawHelicopter(&maChoppa, pixel_buffer);
+				DrawHelicopterFancy(&maChoppa, pixel_buffer, &chopperFlag);
 
 				PlayChoppaSound(audio, buf, buf1);
 
@@ -102,6 +150,7 @@ int main()
 
 				end_time = alt_timestamp();
 				fps = (float)1/((float)(end_time - start_time)/(float)alt_timestamp_freq());
+				printf("MAX FPS: %f\n", fps);
 				if( fps < FPS)
 				{
 					DrawFPS(&char_buffer, fps);
@@ -115,11 +164,9 @@ int main()
 			}
 		}
 
-		while((float)(alt_timestamp())/(float)(alt_timestamp_freq()) < 1)
-		{
-		}
+		wait(1);
 
-		DrawCrash(pixel_buffer, &char_buffer, myMap.steps);
+		DrawCrash(pixel_buffer, &char_buffer, myMap.steps, &highScore);
 		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
 		alt_timestamp_start();
 		while((float)(alt_timestamp())/(float)(alt_timestamp_freq()) < 2)
@@ -133,4 +180,13 @@ int main()
 	}
 
   return 0;
+}
+
+void wait(float seconds)
+{
+	alt_timestamp_start();
+
+	while((float)(alt_timestamp())/(float)(alt_timestamp_freq()) < seconds)
+	{
+	}
 }

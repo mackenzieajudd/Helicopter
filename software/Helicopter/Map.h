@@ -3,7 +3,7 @@
 
 #define GROUND "0"
 #define AIR "1"
-#define BASE_DIFFUCULTY 60
+#define BASE_DIFFUCULTY 90
 #define HEIGHT_MAX 0
 #define HEIGHT_MIN 239
 #define LENGTH_MAX 319
@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include "drivers/inc/altera_up_avalon_video_character_buffer_with_dma.h"
 #include "drivers/inc/altera_up_avalon_video_pixel_buffer_dma.h"
+#include "math.h"
+#include "Obstacle.h"
 
 struct Map
 {
@@ -23,12 +25,15 @@ struct Map
 	int steps;
 };
 
+int getRoof(struct Map* map, int x);
+int getFloor(struct Map* map, int x);
 void InitMap(struct Map* map);
 void InitMapFromFile(struct Map* map, FILE* mapFile);
 void StepMap(struct Map* map);
 void StepMapFlat(struct Map* map);
-void StepMapAlternating(struct Map* map, int* altCounter);
 int GetRandHeight(int steps, int difficulty);
+void StepMapAlternatingObstacles(struct Map* map, int* altCounter, int* mode, struct Obstacle* obstacles[]);
+
 
 void DrawMap(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);

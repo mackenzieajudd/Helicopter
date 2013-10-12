@@ -29,9 +29,9 @@ int CheckForCollisions(struct Map* map, struct Helicopter* helicopter)
 	int i;
 	int j;
 	int n;
-	int collisionHeight;
+	int collisionHeight = 0;
 	int calcCollision = 0;
-	int transformedI;
+	int transformedI = 0;
 	for(i = (*helicopter).x1; i < (*helicopter).x2; i++)
 	{
 		for(j = (*helicopter).y1; j < (*helicopter).y2; j++)
@@ -87,12 +87,64 @@ int CheckForCollisions(struct Map* map, struct Helicopter* helicopter)
 	return 0;
 }
 
+int CheckForObstacleCollisions(struct Obstacle* obstacles[], struct Helicopter* helicopter)
+{
+	int i = 0;
+	int j = 0;
+	int k = 0;
+
+	for(i = 0; i < NUM_OBSTACLES; i++)
+	{
+		if((*obstacles)[i].null != 0)
+		{
+			for(k = (*helicopter).x1; k <= (*helicopter).x2; k++)
+			{
+				for(j = (*helicopter).y1; j <= (*helicopter).y2; j++)
+				{
+					if(k >= (*obstacles)[i].x1 && k <= (*obstacles)[i].x2 && j <= (*obstacles)[i].y2 && j >= (*obstacles)[i].y1)
+						return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 void DrawHelicopter(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 {
 	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*helicopter).h2x1, (*helicopter).h2y1, (*helicopter).h2x2, (*helicopter).h2y2, 0xFFFF, 1);
 	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*helicopter).x1, (*helicopter).y1, (*helicopter).x2, (*helicopter).y2, 0xFF00, 1);
 }
 
+void DrawHelicopterFancy(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer, int* chopperFlag)
+{
+	int i = 0;
+
+	for(i = (*helicopter).h2x1; i <= (*helicopter).h2x2; i++)
+	{
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, i, (*helicopter).h2y1, i, (*helicopter).h2y2, 0xFFFF, 1);
+	}
+
+	if(*chopperFlag == 1)
+	{
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_COLOUR, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, 0x66FF, 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x66FF, (*helicopter).x1, (*helicopter).y1 + 3);
+		*chopperFlag = 0;
+	}
+	else
+	{
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, 0x66FF, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_COLOUR, 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x66FF, (*helicopter).x1, (*helicopter).y1 + 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 3);
+		*chopperFlag = 1;
+	}
+	alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1 + 4, (*helicopter).y1 + 1);
+	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1 + 2, (*helicopter).x2, (*helicopter).y2, HELICOPTER_COLOUR, 1);
+	alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1, (*helicopter).y1 + 2, (*helicopter).x1 + 2, (*helicopter).y1 + 2, HELICOPTER_COLOUR, 1);
+}
 
 void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 {
@@ -113,10 +165,10 @@ void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buf
 	(*helicopter).h1x2 = (*helicopter).x2;
 	(*helicopter).h1y2 = (*helicopter).y2;
 
-	(*helicopter).x1 += (*helicopter).vX;
-	(*helicopter).y1 += -1 * (*helicopter).vY;
-	(*helicopter).x2 += (*helicopter).vX;
-	(*helicopter).y2 += -1 * (*helicopter).vY;
+	(*helicopter).x1 += (*helicopter).vX / 2;
+	(*helicopter).y1 += -1 * (*helicopter).vY / 2;
+	(*helicopter).x2 += (*helicopter).vX / 2;
+	(*helicopter).y2 += -1 * (*helicopter).vY / 2;
 
 	(*helicopter).vX += (*helicopter).aX;
 	(*helicopter).vY += (*helicopter).aY;
