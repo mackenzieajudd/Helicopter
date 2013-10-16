@@ -14,6 +14,7 @@
 #include "Obstacle.h"
 #include <altera_up_sd_card_avalon_interface.h>
 #include "SD.h"
+#include "Person.h"
 
 #define button2 (volatile char *) 0x00002070
 #define FPS 30
@@ -41,12 +42,9 @@ int main()
 	alt_up_pixel_buffer_dma_dev* pixel_buffer;
 	alt_up_char_buffer_dev* char_buffer;
 	double fps;
-	FILE* mapFile;
 	struct Helicopter maChoppa;
+	struct Person person;
 	struct Map myMap;
-	struct Obstacle block0;
-	struct Obstacle block1;
-	struct Obstacle block2;
 	struct Obstacle obstacles[NUM_OBSTACLES];
 	unsigned int buf [7];
 	unsigned int buf1 [2];
@@ -110,7 +108,8 @@ int main()
 
 		InitObstacles(&obstacles);
 
-		InitHelicopter(&maChoppa, HELICOPTER_STARTING_POSITION_X, HELICOPTER_STARTING_POSITION_Y, HELICOPTER_STARTING_POSITION_X + HELICOPTER_SIZE_X, HELICOPTER_STARTING_POSITION_Y + HELICOPTER_SIZE_Y);
+		InitHelicopter(&maChoppa, 155, 173, 161,178);
+		initPersonStart(&person);
 
 		DrawMap(&myMap, pixel_buffer);
 		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
@@ -119,7 +118,7 @@ int main()
 
 		DrawHelicopterFancy(&maChoppa, pixel_buffer, &chopperFlag);
 		SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
-		DrawCountdown(pixel_buffer, &char_buffer);
+		DrawCountdown(pixel_buffer, &char_buffer, &person, &maChoppa, &chopperFlag);
 
 		alt_up_char_buffer_clear(char_buffer);
 

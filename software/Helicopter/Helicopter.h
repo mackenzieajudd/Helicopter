@@ -42,5 +42,6 @@ void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buf
 void DrawHelicopter(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawHelicopterFancy(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer, int* chopperFlag);
 int CheckForObstacleCollisions(struct Obstacle* obstacles[], struct Helicopter* helicopter);
+void MoveHelicopterCountdown(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 
 #endif

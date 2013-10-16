@@ -173,3 +173,13 @@ void MoveHelicopter(struct Helicopter* helicopter, char* input, alt_up_pixel_buf
 	(*helicopter).vX += (*helicopter).aX;
 	(*helicopter).vY += (*helicopter).aY;
 }
+
+void MoveHelicopterCountdown(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_dev* pixel_buffer)
+{
+	(*helicopter).h2y1 = (*helicopter).h1y1;
+	(*helicopter).h2y2 = (*helicopter).h1y2;
+	(*helicopter).h1y1 = (*helicopter).y1;
+	(*helicopter).h1y2 = (*helicopter).y2;
+	(*helicopter).y1--;
+	(*helicopter).y2--;
+}
