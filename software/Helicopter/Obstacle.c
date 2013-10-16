@@ -114,7 +114,7 @@ void AddObstacle(struct Obstacle* obstacles[], struct Obstacle* obstacle)
 {
 	int i;
 
-	for(i = 0; (*obstacles)[i].null != 0; i++);
+	for(i = 0; (*obstacles)[i].null != 0 && i < NUM_OBSTACLES; i++);
 	CopyByValue(&(*obstacles)[i], &(*obstacle));
 }
 

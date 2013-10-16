@@ -12,8 +12,10 @@
 #include "Sound.h"
 #include "Menu.h"
 #include "Obstacle.h"
+#include <altera_up_sd_card_avalon_interface.h>
+#include "SD.h"
 
-#define button2 (volatile char *) 0x00004470
+#define button2 (volatile char *) 0x00002070
 #define FPS 30
 
 void wait(float);
@@ -24,6 +26,10 @@ int main()
 	const int BACK_PIXEL_BUFFER_BASE = 0x000C0000;
 	const char* PIXEL_BUFFER_NAME = "/dev/video_pixel_buffer_dma_0";
 	const char* CHAR_BUFFER_NAME = "/dev/video_character_buffer_with_dma_0";
+	alt_up_sd_card_dev *device_reference;
+	int connected = 0;
+	char* file = "MAP0.TXT";
+	int mapHandle;
 	int i = 0;
 	int j = 0;
 	int mode = 0;
@@ -46,6 +52,8 @@ int main()
 	unsigned int buf1 [2];
 	alt_up_audio_dev * audio = sound_setup();
 
+	device_reference = alt_up_sd_card_open_dev("/dev/Altera_UP_SD_Card_Avalon_Interface_0");
+
 	buf[0] = 0x00000FFF;
 	buf[1] = 0x00000FFF;
 	buf[2] = 0x00000FFF;
@@ -58,16 +66,47 @@ int main()
 
 	srand(time(NULL));
 
+
+
+
+	char* first_file;
+
+
+	if (device_reference != NULL)
+	{
+		if ((connected == 0) && (alt_up_sd_card_is_Present()))
+		{
+			printf("Card connected.\n");
+			if (alt_up_sd_card_is_FAT16())
+			{
+				printf("FAT16 file system detected.\n");
+			}
+			else
+			{
+				printf("Unknown file system.\n");
+			}
+			connected = 1;
+		}
+		else if ((connected == 1) && (alt_up_sd_card_is_Present() == false))
+		{
+			printf("Card disconnected.\n");
+			connected = 0;
+		}
+	}
+
 	InitVGA(PIXEL_BUFFER_NAME, CHAR_BUFFER_NAME, &char_buffer, &pixel_buffer, BACK_PIXEL_BUFFER_BASE);
 	DrawMenu(pixel_buffer, &char_buffer);
 	SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
+
 	while(*button2 != 0)
-				printf("Button: %d\n", *button2);
+		printf("Button: %d\n", *button2);
+
 	alt_up_char_buffer_clear(char_buffer);
 
 	while(1 == 1)
 	{
-		InitMap(&myMap);
+		//InitMap(&myMap);
+		InitMapFromFile(&myMap, file, &mapHandle);
 
 		InitObstacles(&obstacles);
 
@@ -94,7 +133,8 @@ int main()
 			{
 				start_time = alt_timestamp();
 
-				StepMapAlternatingObstacles(&myMap, &i, &mode, &obstacles);
+				//StepBestMapEver(&myMap, &mode, &obstacles);
+				StepMapFromFile(&myMap, &mapHandle, &obstacles);
 				DrawFlatMapQuick(&myMap, pixel_buffer);
 
 				MoveHelicopter(&maChoppa, button2, pixel_buffer);

@@ -1,5 +1,84 @@
 #include "Map.h"
 
+void InitMapFromFile(struct Map* map, char* file_name, int* mapHandle)
+{
+	int i;
+	int j;
+
+	(*map).startingIndex = 0;
+	(*map).steps = 0;
+
+	alt_up_sd_card_fclose(*mapHandle);
+	*mapHandle = alt_up_sd_card_fopen(file_name, 0);
+
+	if(*mapHandle == 0)
+		printf("File successfully opened.\n");
+	else if(*mapHandle == -1){
+		printf("File could not open.\n");
+		return;
+	}
+	else if(*mapHandle == -2) {
+		printf("File already open.\n");
+		return;
+	}
+	for(i = 0; i < 320; i++)
+	{
+		for(j = 0; j < 240; j++)
+		{
+			(*map).map[i][j] = alt_up_sd_card_read(*mapHandle);
+		}
+		alt_up_sd_card_read(*mapHandle);
+		alt_up_sd_card_read(*mapHandle);
+	}
+}
+
+void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[])
+{
+	int j;
+	int x1;
+	int x2;
+	int y1;
+	int y2;
+	struct Obstacle newObstacle;
+
+	for(j = 0; j < 240; j++)
+	{
+		char temp;
+		temp = alt_up_sd_card_read(*mapHandle);
+
+
+		if(temp != *GROUND && temp != *AIR)
+		{
+			x1 = 320;
+			x2 = 320 + (4 * ((int)temp - 48));
+			y1 = j;
+
+			while(temp != *GROUND && temp != *AIR)
+			{
+				(*map).map[(*map).startingIndex][j] = *AIR;
+				temp = alt_up_sd_card_read(*mapHandle);
+				j++;
+			}
+			y2 = j;
+
+			InitObstacle(&newObstacle, x1, y1, x2, y2);
+			AddObstacle(obstacles, &newObstacle);
+		}
+		else
+			(*map).map[(*map).startingIndex][j] = temp;
+	}
+
+	if((*map).startingIndex == LENGTH_MAX)
+		(*map).startingIndex = LENGTH_MIN;
+	else
+		(*map).startingIndex++;
+
+	(*map).steps++;
+
+	alt_up_sd_card_read(*mapHandle);
+	alt_up_sd_card_read(*mapHandle);
+}
+
 void InitMap(struct Map* map)
 {
 	int startingFloor = HEIGHT_MIN - BASE_DIFFUCULTY;
@@ -22,16 +101,87 @@ void InitMap(struct Map* map)
 	}
 }
 
-void InitMapFromFile(struct Map* map, FILE* mapFile)
+void StepBestMapEver(struct Map* map, int* mode, struct Obstacle* obstacles[])
 {
-	int i;
+	int startingFloor;
+	int startingRoof;
+	struct Obstacle obs;
 	int j;
+	int i;
+	int roofChange;
+	int groundChange;
+	int lastStartingIndex;
+	int lastFloor;
+	int lastRoof;
+	int difficulty;
 
-	for(i = 0; i < 320; i++)
+	roofChange = rand() % 3;
+	groundChange = rand() % 3;
+
+	difficulty = BASE_DIFFUCULTY + (*map).steps / 500;
+
+	if((*map).startingIndex == 0)
+		lastStartingIndex = 319;
+	else
+		lastStartingIndex = (*map).startingIndex - 1;
+
+	lastRoof = getRoof(map, lastStartingIndex);
+
+	if(lastRoof <= HEIGHT_MAX + difficulty)
+		startingRoof = lastRoof + 1;
+	else if(lastRoof >= 110)
+		startingRoof = lastRoof - 1;
+	else if(roofChange == 2)
+		startingRoof = lastRoof + 1;
+	else if(roofChange == 1)
+		startingRoof = lastRoof;
+	else
+		startingRoof = lastRoof - 1;
+
+	lastFloor = getFloor(map, lastStartingIndex);
+
+	if(lastFloor >= HEIGHT_MIN - difficulty)
+		startingFloor = lastFloor - 1;
+	else if(lastFloor <= 130)
+		startingFloor = lastFloor + 1;
+	else if(groundChange == 2)
+		startingFloor = lastFloor + 1;
+	else if(groundChange == 1)
+		startingFloor = lastFloor;
+	else
+		startingFloor = lastFloor - 1;
+
+	for(j = 0; j < STEP_SIZE; j++)
 	{
-		for(j = 0; i < 240; i++)
+		for(i = 0; i < 240; i++)
 		{
-			(*map).map[i][j] = fgetc(mapFile);
+			if(i >= startingFloor || i <= startingRoof)
+				(*map).map[(*map).startingIndex][i] = *GROUND;
+			else
+				(*map).map[(*map).startingIndex][i] = *AIR;
+		}
+
+		if((*map).startingIndex == LENGTH_MAX)
+			(*map).startingIndex = LENGTH_MIN;
+		else
+			(*map).startingIndex++;
+	}
+
+	(*map).steps++;
+
+	if((*map).steps % 30 == 0)
+	{
+		if((*mode) == 1)
+		{
+			InitObstacle(&obs, 320, startingRoof + 10, 330, startingRoof + 20);
+			AddObstacle(obstacles, &obs);
+			(*mode) = 0;
+		}
+		else
+		{
+			InitObstacle(&obs, 320, startingFloor - 20, 330, startingFloor - 10);
+			AddObstacle(obstacles, &obs);
+			(*mode) = 1;
 		}
 	}
 }
@@ -272,7 +422,7 @@ void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer
 	int i = 0;
 	int j = 0;
 
-	int flux = 3;
+	int flux = 4;
 	int tempRoof;
 	int tempFloor;
 

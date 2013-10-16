@@ -8,7 +8,7 @@
 #define HEIGHT_MIN 239
 #define LENGTH_MAX 319
 #define LENGTH_MIN 0
-#define STEP_SIZE 4
+#define STEP_SIZE 1
 
 #include <stdio.h>
 #include <time.h>
@@ -17,6 +17,8 @@
 #include "drivers/inc/altera_up_avalon_video_pixel_buffer_dma.h"
 #include "math.h"
 #include "Obstacle.h"
+#include "SD.h"
+#include <altera_up_sd_card_avalon_interface.h>
 
 struct Map
 {
@@ -28,12 +30,13 @@ struct Map
 int getRoof(struct Map* map, int x);
 int getFloor(struct Map* map, int x);
 void InitMap(struct Map* map);
-void InitMapFromFile(struct Map* map, FILE* mapFile);
 void StepMap(struct Map* map);
 void StepMapFlat(struct Map* map);
 int GetRandHeight(int steps, int difficulty);
 void StepMapAlternatingObstacles(struct Map* map, int* altCounter, int* mode, struct Obstacle* obstacles[]);
-
+void StepBestMapEver(struct Map* map, int* mode, struct Obstacle* obstacles[]);
+void InitMapFromFile(struct Map* map, char* fileName, int* mapHandle);
+void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[]);
 
 void DrawMap(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
