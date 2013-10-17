@@ -122,27 +122,29 @@ void DrawHelicopterFancy(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_
 
 	for(i = (*helicopter).h2x1; i <= (*helicopter).h2x2; i++)
 	{
-		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, i, (*helicopter).h2y1, i, (*helicopter).h2y2, 0xFFFF, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, i, (*helicopter).h2y1, i, (*helicopter).h2y2, BACK_COLOR, 1);
 	}
 
 	if(*chopperFlag == 1)
 	{
 		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_COLOUR, 1);
-		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, 0x66FF, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_COLOUR2, 1);
 		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 1);
-		alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x66FF, (*helicopter).x1, (*helicopter).y1 + 3);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR2, (*helicopter).x1, (*helicopter).y1 + 3);
 		*chopperFlag = 0;
 	}
 	else
 	{
-		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, 0x66FF, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_COLOUR2, 1);
 		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_COLOUR, 1);
-		alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x66FF, (*helicopter).x1, (*helicopter).y1 + 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR2, (*helicopter).x1, (*helicopter).y1 + 1);
 		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 3);
 		*chopperFlag = 1;
 	}
 	alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1 + 4, (*helicopter).y1 + 1);
 	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1 + 2, (*helicopter).x2, (*helicopter).y2, HELICOPTER_COLOUR, 1);
+	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*helicopter).x1 + 3, (*helicopter).y1 + 3, (*helicopter).x2 - 1, (*helicopter).y2 - 1, HELICOPTER_COLOUR, 1);
+	alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x964B00, (*helicopter).x1 + 5, (*helicopter).y1 + 4);
 	alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1, (*helicopter).y1 + 2, (*helicopter).x1 + 2, (*helicopter).y1 + 2, HELICOPTER_COLOUR, 1);
 }
 

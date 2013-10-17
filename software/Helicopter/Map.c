@@ -13,14 +13,17 @@ void InitMapFromFile(struct Map* map, char* file_name, int* mapHandle)
 
 	if(*mapHandle == 0)
 		printf("File successfully opened.\n");
-	else if(*mapHandle == -1){
+	else if(*mapHandle == -1)
+	{
 		printf("File could not open.\n");
 		return;
 	}
-	else if(*mapHandle == -2) {
+	else if(*mapHandle == -2)
+	{
 		printf("File already open.\n");
 		return;
 	}
+
 	for(i = 0; i < 320; i++)
 	{
 		for(j = 0; j < 240; j++)
@@ -32,51 +35,89 @@ void InitMapFromFile(struct Map* map, char* file_name, int* mapHandle)
 	}
 }
 
-void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[])
+void SwapMaps(int* mapHandle, int* mapPointer)
+{
+	char* fileName;
+
+	alt_up_sd_card_fclose(*mapHandle);
+
+	if(*mapPointer == 0)
+		fileName = FILE1;
+	else if(*mapPointer == 1)
+		fileName = FILE2;
+	else if(*mapPointer == 2)
+		fileName = FILE3;
+	else if(*mapPointer == 3)
+		fileName = FILE4;
+	else if(*mapPointer == 4)
+		fileName = FILE5;
+	else if(*mapPointer == 5)
+		fileName = FILE1;
+	else
+	{
+		fileName = FILE1;
+		*mapPointer = 0;
+	}
+
+	*mapPointer = *mapPointer + 1;
+
+	*mapHandle = alt_up_sd_card_fopen(fileName, 0);
+}
+
+void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[], int* mapPointer)
 {
 	int j;
+	int i;
 	int x1;
 	int x2;
 	int y1;
 	int y2;
 	struct Obstacle newObstacle;
 
-	for(j = 0; j < 240; j++)
+	for(i = 0; i < STEP_SIZE; i++)
 	{
-		char temp;
-		temp = alt_up_sd_card_read(*mapHandle);
-
-
-		if(temp != *GROUND && temp != *AIR)
+		for(j = 0; j < 240; j++)
 		{
-			x1 = 320;
-			x2 = 320 + (4 * ((int)temp - 48));
-			y1 = j;
+			char temp;
+			temp = alt_up_sd_card_read(*mapHandle);
 
-			while(temp != *GROUND && temp != *AIR)
+			if(temp != *GROUND && temp != *AIR)
 			{
-				(*map).map[(*map).startingIndex][j] = *AIR;
-				temp = alt_up_sd_card_read(*mapHandle);
-				j++;
+				x1 = 320;
+				x2 = 320 + (4 * ((int)temp - 48));
+				y1 = j;
+
+				while(temp != *GROUND && temp != *AIR)
+				{
+					(*map).map[(*map).startingIndex][j] = *AIR;
+					temp = alt_up_sd_card_read(*mapHandle);
+					j++;
+				}
+				y2 = j;
+
+				InitObstacle(&newObstacle, x1, y1, x2, y2);
+				AddObstacle(obstacles, &newObstacle);
 			}
-			y2 = j;
-
-			InitObstacle(&newObstacle, x1, y1, x2, y2);
-			AddObstacle(obstacles, &newObstacle);
+			else
+				(*map).map[(*map).startingIndex][j] = temp;
 		}
+
+		if((*map).startingIndex == LENGTH_MAX)
+			(*map).startingIndex = LENGTH_MIN;
 		else
-			(*map).map[(*map).startingIndex][j] = temp;
+			(*map).startingIndex++;
+
+		(*map).steps++;
+
+		alt_up_sd_card_read(*mapHandle);
+		alt_up_sd_card_read(*mapHandle);
+
+		if((*map).steps % SEGMENT_LENGTH == 0)
+		{
+			printf("HERE\n");
+			SwapMaps(mapHandle, mapPointer);
+		}
 	}
-
-	if((*map).startingIndex == LENGTH_MAX)
-		(*map).startingIndex = LENGTH_MIN;
-	else
-		(*map).startingIndex++;
-
-	(*map).steps++;
-
-	alt_up_sd_card_read(*mapHandle);
-	alt_up_sd_card_read(*mapHandle);
 }
 
 void InitMap(struct Map* map)
@@ -328,10 +369,10 @@ void DrawMap(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 		for(j = (*map).startingIndex; iterations < 320; j++)
 		{
 			if((*map).map[j][i] == *AIR)
-				alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, i);
+				alt_up_pixel_buffer_dma_draw(pixel_buffer, BACK_COLOR, iterations, i);
 
 			else
-				alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, i);
+				alt_up_pixel_buffer_dma_draw(pixel_buffer, GROUND_COLOR, iterations, i);
 
 			iterations++;
 
@@ -422,7 +463,7 @@ void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer
 	int i = 0;
 	int j = 0;
 
-	int flux = 4;
+	int flux = MAX_FLUX;
 	int tempRoof;
 	int tempFloor;
 
@@ -435,10 +476,10 @@ void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer
 			if((*map).map[i][j] != (*map).map[i-(2 * STEP_SIZE)][j] || i - (2 * STEP_SIZE) < (*map).startingIndex || i < (2 *STEP_SIZE))
 			{
 				if((*map).map[i][j] == *AIR)
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, j);
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, BACK_COLOR, iterations, j);
 
 				else
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, j);
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, GROUND_COLOR, iterations, j);
 			}
 		}
 
@@ -459,10 +500,10 @@ void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer
 			if((*map).map[i][j] != (*map).map[i-(2 * STEP_SIZE)][j] || i - (2 * STEP_SIZE) < (*map).startingIndex || i < (2 *STEP_SIZE))
 			{
 				if((*map).map[i][j] == *AIR)
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0xFFFF, iterations, j);
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, BACK_COLOR, iterations, j);
 
 				else
-					alt_up_pixel_buffer_dma_draw(pixel_buffer, 0x0000, iterations, j);
+					alt_up_pixel_buffer_dma_draw(pixel_buffer, GROUND_COLOR, iterations, j);
 			}
 		}
 

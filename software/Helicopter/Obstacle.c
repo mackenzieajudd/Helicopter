@@ -49,8 +49,16 @@ void MoveObstacle(struct Obstacle* obstacle)
 
 void DrawObstacle(struct Obstacle* obstacle, alt_up_pixel_buffer_dma_dev* pixel_buffer)
 {
-	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacle).h2x1, (*obstacle).h2y1, (*obstacle).h2x2, (*obstacle).h2y2, 0xFFFF, 1);
-	alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacle).x1, (*obstacle).y1, (*obstacle).x2, (*obstacle).y2, 0x0000, 1);
+	int i;
+
+	for(i = (*obstacle).h2x1; i < (*obstacle).h2x2; i++)
+	{
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, i, (*obstacle).h2y1, i, (*obstacle).h2y2, BACK_COLOR, 1);
+	}
+	for(i = (*obstacle).x1; i < (*obstacle).x2; i++)
+	{
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, i, (*obstacle).y1, i, (*obstacle).y2, GROUND_COLOR, 1);
+	}
 }
 
 void ManageObstacles(struct Obstacle* obstacles[], alt_up_pixel_buffer_dma_dev* pixel_buffer)
@@ -63,8 +71,8 @@ void ManageObstacles(struct Obstacle* obstacles[], alt_up_pixel_buffer_dma_dev* 
 		{
 			if(((*obstacles)[i]).x2 == 0 && ((*obstacles)[i]).h1x2 == 0 && ((*obstacles)[i]).h2x2 == 0)
 			{
-				alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacles)[i].h2x1, (*obstacles)[i].h2y1, (*obstacles)[i].h2x2, (*obstacles)[i].h2y2, 0xFFFF, 0);
-				alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacles)[i].h2x1, (*obstacles)[i].h2y1, (*obstacles)[i].h2x2, (*obstacles)[i].h2y2, 0xFFFF, 1);
+				alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacles)[i].h2x1, (*obstacles)[i].h2y1, (*obstacles)[i].h2x2, (*obstacles)[i].h2y2, BACK_COLOR, 0);
+				alt_up_pixel_buffer_dma_draw_rectangle(pixel_buffer, (*obstacles)[i].h2x1, (*obstacles)[i].h2y1, (*obstacles)[i].h2x2, (*obstacles)[i].h2y2, BACK_COLOR, 1);
 				(*obstacles)[i].null = 0;
 			}
 		}

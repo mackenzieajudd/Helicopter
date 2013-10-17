@@ -57,7 +57,6 @@ void DrawCountdown(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffer
 				SwapBuffers(&buffer_flag, BACK_PIXEL_BUFFER_BASE, PIXEL_BUFFER_BASE, &pixel_buffer);
 				while((float)(alt_timestamp())/(float)(alt_timestamp_freq()) < 0.05);
 			}
-			//countdown--;
 		}
 		else if(countdown >= 1)
 		{
@@ -90,14 +89,30 @@ void DrawCountdown(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffer
 void DrawCrash(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffer_dev** char_buffer, int score, int* highScore)
 {
 	char scoreBuffer[15];
-	char highScoreBuffer[25];
+	char highScoreBuffer0[25];
+	char highScoreBuffer1[25];
+	char highScoreBuffer2[25];
+	char high_score_names[5][3];
+	char* name0;
+	char* name1;
+	char* name2;
+	int high_scores[3];
+	//Ordered high score names & numbers
+	char high_score[35];
+	//Variables that need to be set
+	int new_high_score = score - STEP_SIZE;
+	char new_high_score_name[3] = "NEW";
+	char textfile[] = "scores.txt";
+
 	int i = 0;
 
-	if(*highScore < score - 1)
-		*highScore = score - 1;
+	Highscore( new_high_score, &new_high_score_name, &high_score_names, &high_scores, &textfile);
+	write_txt(&textfile, &high_score_names, &high_scores);
 
-	sprintf(scoreBuffer, "Score: %d", score - 1);
-	sprintf(highScoreBuffer, "High Score: %d", *highScore);
+	sprintf(scoreBuffer, "Score: %d", score - STEP_SIZE);
+	sprintf(highScoreBuffer0, "3rd: %d", high_scores[0]);
+	sprintf(highScoreBuffer1, "2nd: %d", high_scores[1]);
+	sprintf(highScoreBuffer2, "1st: %d", high_scores[2]);
 
 	for(i = 0; i < 320; i++)
 	{
@@ -107,6 +122,11 @@ void DrawCrash(alt_up_pixel_buffer_dma_dev* pixel_buffer, alt_up_char_buffer_dev
 	alt_up_char_buffer_clear(*char_buffer);
 	alt_up_char_buffer_string((*char_buffer), "Y o u  C r a s h e d !", 28, 15);
 	alt_up_char_buffer_string((*char_buffer), scoreBuffer, 34, 30);
-	alt_up_char_buffer_string((*char_buffer), highScoreBuffer, 31, 35);
+	alt_up_char_buffer_string((*char_buffer), highScoreBuffer2, 35, 35);
+	alt_up_char_buffer_string((*char_buffer), highScoreBuffer1, 35, 37);
+	alt_up_char_buffer_string((*char_buffer), highScoreBuffer0, 35, 39);
+	//alt_up_char_buffer_string((*char_buffer), &high_score_names[0][0], 45, 35);
+	//alt_up_char_buffer_string((*char_buffer), &high_score_names[1][0], 45, 37);
+	//alt_up_char_buffer_string((*char_buffer), &high_score_names[2][0], 45, 39);
 	alt_up_char_buffer_string((*char_buffer), "Press <KEY1> To Retry", 28, 45);
 }

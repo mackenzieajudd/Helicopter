@@ -8,7 +8,20 @@
 #define HEIGHT_MIN 239
 #define LENGTH_MAX 319
 #define LENGTH_MIN 0
-#define STEP_SIZE 1
+#define STEP_SIZE 3
+#define MAX_FLUX 7
+#define SEGMENT_LENGTH 600
+
+//#define GROUND_COLOR 0x8A22
+#define GROUND_COLOR 0x3140
+#define BACK_COLOR 0x000000
+
+#define FILE0 "Map0.txt"
+#define FILE1 "Map4.txt"
+#define FILE2 "Map4.txt"
+#define FILE3 "Map4.txt"
+#define FILE4 "Map4.txt"
+#define FILE5 "Map4.txt"
 
 #include <stdio.h>
 #include <time.h>
@@ -36,12 +49,12 @@ int GetRandHeight(int steps, int difficulty);
 void StepMapAlternatingObstacles(struct Map* map, int* altCounter, int* mode, struct Obstacle* obstacles[]);
 void StepBestMapEver(struct Map* map, int* mode, struct Obstacle* obstacles[]);
 void InitMapFromFile(struct Map* map, char* fileName, int* mapHandle);
-void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[]);
+void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles[], int* mapPointer);
+void SwapMaps(int* mapHandle, int* mapPointer);
 
 void DrawMap(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawFlatMapQuick(struct Map* map, alt_up_pixel_buffer_dma_dev* pixel_buffer);
 void DrawMapInConsole(struct Map* map);
-//void DrawMapInTextFile(struct Map* map, char* filePath);
 
 #endif
