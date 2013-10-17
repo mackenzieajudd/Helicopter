@@ -10,7 +10,9 @@
 //#define HELICOPTER_COLOUR 0xFFFA
 //#define HELICOPTER_COLOUR2 0xEEEB
 #define HELICOPTER_COLOUR 0xFFFA
-#define HELICOPTER_COLOUR2 0x5000
+#define HELICOPTER_COLOUR2 0x9492
+#define HELICOPTER_ROTER 0x528A
+
 #include "Map.h"
 #include "Obstacle.h"
 

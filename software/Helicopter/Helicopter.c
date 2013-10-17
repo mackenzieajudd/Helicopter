@@ -127,18 +127,18 @@ void DrawHelicopterFancy(struct Helicopter* helicopter, alt_up_pixel_buffer_dma_
 
 	if(*chopperFlag == 1)
 	{
-		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_COLOUR, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_ROTER, 1);
 		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_COLOUR2, 1);
-		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 1);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_ROTER, (*helicopter).x1, (*helicopter).y1 + 1);
 		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR2, (*helicopter).x1, (*helicopter).y1 + 3);
 		*chopperFlag = 0;
 	}
 	else
 	{
 		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 2, (*helicopter).y1, (*helicopter).x1 + 4, (*helicopter).y1, HELICOPTER_COLOUR2, 1);
-		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_COLOUR, 1);
+		alt_up_pixel_buffer_dma_draw_line(pixel_buffer, (*helicopter).x1 + 5, (*helicopter).y1, (*helicopter).x2, (*helicopter).y1, HELICOPTER_ROTER, 1);
 		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR2, (*helicopter).x1, (*helicopter).y1 + 1);
-		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1, (*helicopter).y1 + 3);
+		alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_ROTER, (*helicopter).x1, (*helicopter).y1 + 3);
 		*chopperFlag = 1;
 	}
 	alt_up_pixel_buffer_dma_draw(pixel_buffer, HELICOPTER_COLOUR, (*helicopter).x1 + 4, (*helicopter).y1 + 1);

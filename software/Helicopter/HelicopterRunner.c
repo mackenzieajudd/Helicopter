@@ -18,7 +18,7 @@
 #include "system.h"
 
 #define button2 (volatile char *) 0x00002070
-#define FPS 30
+#define FPS 20
 #define push_buttons (volatile char*) 0x002820
 
 /* define variables and constants for playing background music */
@@ -48,6 +48,14 @@ unsigned int second_song[SAMPLE_SIZE]= {0};
 int third_count;
 unsigned int song3[SONG3_SIZE]= {0};
 unsigned int third_song[SAMPLE_SIZE]= {0};
+
+int k1 = 0;
+int k2 = 0;
+int k3 = 0;
+
+unsigned int buf1[SONG_SIZE / 2] = { 0 };
+unsigned int buf2[SONG2_SIZE / 2] = { 0 };
+unsigned int buf3[SONG3_SIZE / 2] = { 0 };
 
 volatile int flag=0;
 volatile int flag1=0;
@@ -112,145 +120,142 @@ connected = 0;
 return -1;
 }
 
-void audio_isr (void * context, unsigned int irq_id)
-{
+void audio_isr(void * context, unsigned int irq_id) {
 
-if(flag1==1)
-{
+if (flag1 == 1) {
 // fill 96 samples
-for(song_loop = 0; song_loop < SAMPLE_SIZE; song_loop++)
-{
-song_temp[0] = song1[first_count];
-song_temp[1] = song1[first_count+1];
+//for (song_loop = 0; song_loop < SAMPLE_SIZE; song_loop++) {
+//song_temp[0] = song1[first_count];
+//song_temp[1] = song1[first_count + 1];
 
-first_count+=2;
+//first_count += 2;
 
-first_song[song_loop] = ((song_temp[1]<<8)|song_temp[0]);
-
-if(first_count >= SONG_SIZE)
-{
+if (k1 >= (SONG_SIZE) / 2) {
 alt_irq_disable(AUDIO_0_IRQ);
 }
-}
-alt_up_audio_write_fifo(audio, first_song, SAMPLE_SIZE, ALT_UP_AUDIO_LEFT);
-alt_up_audio_write_fifo(audio, first_song, SAMPLE_SIZE, ALT_UP_AUDIO_RIGHT);
+//}
+alt_up_audio_write_fifo(audio, &buf1[k1], SAMPLE_SIZE,
+ALT_UP_AUDIO_LEFT);
+alt_up_audio_write_fifo(audio, &buf1[k1], SAMPLE_SIZE,
+ALT_UP_AUDIO_RIGHT);
+
+k1 = k1 + 96;
 
 }
 
-else if(flag==1)
-{
-for(song_loop = 0; song_loop < SAMPLE_SIZE; song_loop++)
-{
+else if (flag == 1) {
 
-song_temp[0] = song2[second_count];
-song_temp[1] = song2[second_count+1];
-
-second_count+=2;
-
-second_song[song_loop] = ((song_temp[1]<<8)|song_temp[0]);
-
-if(second_count >= SONG2_SIZE )
-{
-second_count=10000;
+if (k2 >= (SONG2_SIZE)/2) {
+k2 = 15000;
 }
 /*// dont need to repeat crash sound
 if(second_count >= SONG_SIZE - 20000)
 second_count = 0;*/
-}
+
 //printf("%d,%d \n", second_song[60], second_song[50]);
-alt_up_audio_write_fifo(audio, second_song, SAMPLE_SIZE, ALT_UP_AUDIO_LEFT);
-alt_up_audio_write_fifo(audio, second_song, SAMPLE_SIZE, ALT_UP_AUDIO_RIGHT);
+alt_up_audio_write_fifo(audio, &buf2[k2], SAMPLE_SIZE,
+ALT_UP_AUDIO_LEFT);
+alt_up_audio_write_fifo(audio, &buf2[k2], SAMPLE_SIZE,
+ALT_UP_AUDIO_RIGHT);
 
+k2 = k2 + 96;
 }
 
-else
-{
-for(song_loop = 0; song_loop < SAMPLE_SIZE; song_loop++)
-{
+else {
 
-song_temp[0] = song3[third_count];
-song_temp[1] = song3[third_count+1];
-
-third_count+=2;
-
-third_song[song_loop] = ((song_temp[1]<<8)|song_temp[0]);
-
-if(third_count >= SONG3_SIZE)
-{
-flag=1;
+if (k3 >= (SONG3_SIZE)/2) {
+flag = 1;
 }
-/*// dont need to repeat crash sound
-if(second_count >= SONG_SIZE - 20000)
-second_count = 0;*/
-}
+
 //printf("%d,%d \n", second_song[60], second_song[50]);
-alt_up_audio_write_fifo(audio, third_song, SAMPLE_SIZE, ALT_UP_AUDIO_LEFT);
-alt_up_audio_write_fifo(audio, third_song, SAMPLE_SIZE, ALT_UP_AUDIO_RIGHT);
+alt_up_audio_write_fifo(audio, &buf3[k3], SAMPLE_SIZE,
+ALT_UP_AUDIO_LEFT);
+alt_up_audio_write_fifo(audio, &buf3[k3], SAMPLE_SIZE,
+ALT_UP_AUDIO_RIGHT);
+k3 = k3 + 96;
 }
 }
 
-void load_songs_from_sd()
-{
+
+void load_songs_from_sd() {
 song1 = NULL;
 short int file_handle;
 int i;
 
-if( openFileInSD("bomb.wav", &file_handle) == 0)
-{
-song1 = (unsigned int*)malloc(SONG_SIZE*sizeof(unsigned int));
+if (openFileInSD("bomb.wav", &file_handle) == 0) {
+song1 = (unsigned int*) malloc(SONG_SIZE * sizeof(unsigned int));
 
-if(song1 == NULL)
-{
+if (song1 == NULL) {
 
 printf("malloc failed\n");
-alt_up_sd_card_fclose( file_handle );
+alt_up_sd_card_fclose(file_handle);
 }
 
-for(i = 0; i < WAVHEADER_SIZE; i++)
-alt_up_sd_card_read( file_handle );
+for (i = 0; i < WAVHEADER_SIZE; i++)
+alt_up_sd_card_read(file_handle);
 
-for(i = 0; i < SONG_SIZE; i++)
-{
-song1[i] = alt_up_sd_card_read( file_handle );
-
-}
-alt_up_sd_card_fclose( file_handle );
-
-first_song = (unsigned int*)malloc(SAMPLE_SIZE*sizeof(unsigned int));
-}
-
-if( openFileInSD("back.wav", &file_handle) == 0)
-{
-
-for(i = 0; i < WAVHEADER_SIZE; i++)
-alt_up_sd_card_read( file_handle );
-
-for(i = 0; i < SONG2_SIZE; i++)
-{
-song2[i] = alt_up_sd_card_read( file_handle );
+for (i = 0; i < SONG_SIZE; i++) {
+song1[i] = alt_up_sd_card_read(file_handle);
 
 }
-alt_up_sd_card_fclose( file_handle );
+alt_up_sd_card_fclose(file_handle);
+
+first_song = (unsigned int*) malloc(SAMPLE_SIZE * sizeof(unsigned int));
+
+for (song_loop = 0; song_loop < (SONG_SIZE / 2); song_loop++) {
+song_temp[0] = song1[first_count];
+song_temp[1] = song1[first_count + 1];
+
+first_count += 2;
+
+buf1[song_loop] = ((song_temp[1] <<  8)| song_temp[0]);
+}
+
+if (openFileInSD("back.wav", &file_handle) == 0) {
+
+for (i = 0; i < WAVHEADER_SIZE; i++)
+alt_up_sd_card_read(file_handle);
+
+for (i = 0; i < SONG2_SIZE; i++) {
+song2[i] = alt_up_sd_card_read(file_handle);
+
+}
+alt_up_sd_card_fclose(file_handle);
 
 //first_song = (unsigned int*)malloc(SAMPLE_SIZE*sizeof(unsigned int));
+for (song_loop = 0; song_loop < (SONG2_SIZE / 2); song_loop++) {
+song_temp[0] = song2[second_count];
+song_temp[1] = song2[second_count + 1];
+
+second_count += 2;
+
+buf2[song_loop] = ((song_temp[1] <<  8)| song_temp[0]);
+}
 }
 
-if( openFileInSD("chop.wav", &file_handle) == 0)
-{
+if (openFileInSD("chop.wav", &file_handle) == 0) {
 
-for(i = 0; i < WAVHEADER_SIZE; i++)
-alt_up_sd_card_read( file_handle );
+for (i = 0; i < WAVHEADER_SIZE; i++)
+alt_up_sd_card_read(file_handle);
 
-for(i = 0; i < SONG3_SIZE; i++)
-{
-song3[i] = alt_up_sd_card_read( file_handle );
+for (i = 0; i < SONG3_SIZE; i++) {
+song3[i] = alt_up_sd_card_read(file_handle);
 
 }
-alt_up_sd_card_fclose( file_handle );
+alt_up_sd_card_fclose(file_handle);
 
 //first_song = (unsigned int*)malloc(SAMPLE_SIZE*sizeof(unsigned int));
+for (song_loop = 0; song_loop < (SONG3_SIZE / 2); song_loop++) {
+song_temp[0] = song3[third_count];
+song_temp[1] = song3[third_count + 1];
+
+third_count += 2;
+
+buf3[song_loop] = ((song_temp[1] << 8) | song_temp[0]);
+}
 }
 
+}
 }
 
 int main()
@@ -351,6 +356,9 @@ int main()
 		first_count=0;
 		second_count=0;
 		third_count=0;
+		k1 = 0;
+		k2 = 0;
+		k3 = 0;
 		flag=0;
 		flag1= 0;
 		alt_irq_enable(AUDIO_0_IRQ);
