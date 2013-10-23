@@ -24,9 +24,9 @@ void InitMapFromFile(struct Map* map, char* file_name, int* mapHandle)
 		return;
 	}
 
-	for(i = 0; i < 320; i++)
+	for(i = 0; i < LENGTH_MAX + 1; i++)
 	{
-		for(j = 0; j < 240; j++)
+		for(j = 0; j < HEIGHT_MIN + 1; j++)
 		{
 			(*map).map[i][j] = alt_up_sd_card_read(*mapHandle);
 		}
@@ -76,15 +76,15 @@ void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles
 
 	for(i = 0; i < STEP_SIZE; i++)
 	{
-		for(j = 0; j < 240; j++)
+		for(j = 0; j < HEIGHT_MIN + 1; j++)
 		{
 			char temp;
 			temp = alt_up_sd_card_read(*mapHandle);
 
 			if(temp != *GROUND && temp != *AIR)
 			{
-				x1 = 320;
-				x2 = 320 + (4 * ((int)temp - 48));
+				x1 = LENGTH_MAX + 1;
+				x2 = LENGTH_MAX + 1 + (4 * ((int)temp - 48));
 				y1 = j;
 
 				while(temp != *GROUND && temp != *AIR)
@@ -93,6 +93,7 @@ void StepMapFromFile(struct Map* map, int* mapHandle, struct Obstacle* obstacles
 					temp = alt_up_sd_card_read(*mapHandle);
 					j++;
 				}
+
 				y2 = j;
 
 				InitObstacle(&newObstacle, x1, y1, x2, y2);
@@ -130,9 +131,9 @@ void InitMap(struct Map* map)
 	(*map).startingIndex = 0;
 	(*map).steps = 0;
 	
-	for(i = 0; i < 320; i++)
+	for(i = 0; i < LENGTH_MAX + 1; i++)
 	{
-		for(j = 0; j < 240; j++)
+		for(j = 0; j < HEIGHT_MIN + 1; j++)
 		{
 			if(j >= startingFloor || j <= startingCeiling)
 				(*map).map[i][j] = *GROUND;

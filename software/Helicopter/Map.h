@@ -10,18 +10,18 @@
 #define LENGTH_MIN 0
 #define STEP_SIZE 3
 #define MAX_FLUX 7
-#define SEGMENT_LENGTH 600
+#define SEGMENT_LENGTH 700
 
 //#define GROUND_COLOR 0x8A22
-#define GROUND_COLOR 0x3140
+#define GROUND_COLOR 0x40E0
 #define BACK_COLOR 0x000000
 
 #define FILE0 "Map0.txt"
-#define FILE1 "Map4.txt"
+#define FILE1 "Map2.txt"
 #define FILE2 "Map4.txt"
-#define FILE3 "Map4.txt"
+#define FILE3 "Map2.txt"
 #define FILE4 "Map4.txt"
-#define FILE5 "Map4.txt"
+#define FILE5 "Map3.txt"
 
 #include <stdio.h>
 #include <time.h>
